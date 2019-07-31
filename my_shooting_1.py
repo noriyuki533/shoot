@@ -5,8 +5,28 @@ import random
 WINDOW_H = 200
 WINDOW_W = 200
 
-class Enemy:
+class GameObject:
     def __init__(self):
+        self.x = 0
+        self.y = 10
+        self.vx = 2
+        self.vy = 0
+        self.size = 6
+        self.alive = True
+
+    def selfDraw(self, color):
+        if not self.alive:
+            return
+
+        rs = self.size
+        pyxel.rect(self.x-rs/2, self.y-rs/2, self.x+rs/2, self.y+rs/2, color)
+
+    def isOutside(self):
+        return (self.x < 0 or self.x > WINDOW_W) or (self.y < 0 or self.y > WINDOW_H)
+
+class Enemy(GameObject):
+    def __init__(self):
+        super().__init__()
         self.x = 0
         self.y = 10
         self.vx = 2
@@ -20,8 +40,9 @@ class Enemy:
         
         self.x += self.vx
 
-class Player:
+class Player(GameObject):
     def __init__(self):
+        super().__init__()
         self.x = 0
         self.y = 0
         self.size = 5
@@ -30,8 +51,9 @@ class Player:
         self.x = pyxel.mouse_x
         self.y = pyxel.mouse_y
 
-class Bullet:
+class Bullet(GameObject):
     def __init__(self):
+        super().__init__()
         self.x = 0
         self.y = 0
         self.vx = 0
@@ -41,6 +63,9 @@ class Bullet:
     def update(self):
         self.x += self.vx
         self.y += self.vy
+
+        if self.isOutside():
+            self.alive = False
 
     def setSpeed(self, speed):
         self.vx = self.vy = speed
@@ -76,13 +101,10 @@ class App:
         pyxel.text(WINDOW_W/2-5, 10, "SHOOT", pyxel.frame_count//5 % 3 + 7)
         pyxel.blt(61, 66, 0, 0, 0, 38, 16)
 
-        rs = self.player.size
-        pyxel.rect(self.player.x-rs/2, self.player.y-rs/2, self.player.x+rs/2, self.player.y+rs/2, 11)
-
-        rs = self.enemy.size
-        pyxel.rect(self.enemy.x-rs/2, self.enemy.y-rs/2, self.enemy.x+rs/2, self.enemy.y+rs/2, 14)
+        self.player.selfDraw(11)
+        self.enemy.selfDraw(14)
 
         for bullet in self.Bullets:
-            pyxel.circ(bullet.x, bullet.y, bullet.size, pyxel.frame_count % 16)
+            bullet.selfDraw(9)
 
 App()
