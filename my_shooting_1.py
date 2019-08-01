@@ -25,9 +25,13 @@ class GameObject:
         self.color = color
         self.hp = hp
 
-    def selfDraw(self, color):
+    def selfDraw(self, color, img=None):
         rs = self.size
-        pyxel.rect(self.x-rs/2, self.y-rs/2, self.x+rs/2, self.y+rs/2, self.color)
+
+        if not img is None:
+            pyxel.blt(self.x-7, self.y-7, img, 0, 0, 15, 15, 0)
+        else:
+            pyxel.rect(self.x-rs/2, self.y-rs/2, self.x+rs/2, self.y+rs/2, self.color)
 
     def isOutside(self):
         return (self.y < 0) or (self.y > WINDOW_H)
@@ -116,6 +120,7 @@ def isCollision(obj1: GameObject, obj2: GameObject):
 class App:
     def __init__(self):
         pyxel.init(WINDOW_H, WINDOW_W, caption="SHOOT")
+        pyxel.load("my_resource.pyxres.pyxel")
         self.player = Player()
         self.enemy = Enemy()
         self.Bullets = []
@@ -128,10 +133,16 @@ class App:
         if pyxel.btnp(pyxel.KEY_Q):
             pyxel.quit()
         
+        if pyxel.btnp(pyxel.KEY_R) and self.player.alive == False:
+            self.player.alive = True
+            self.enemy.hp = 50
+
+        
         if pyxel.btnp(pyxel.MOUSE_LEFT_BUTTON) and self.player.alive:
             new_bullet = Bullet()
             new_bullet.x = pyxel.mouse_x
             new_bullet.y = pyxel.mouse_y
+            new_bullet.size = 1
             self.Bullets.append(new_bullet)
             #print(len(self.Bullets))
         
@@ -156,7 +167,7 @@ class App:
             if isCollision(bullet, self.enemy):
                 self.enemy.hurt()
                 del self.Bullets[i]
-                self.Particles.append(Particle())
+                #self.Particles.append(Particle())
         
         for i, particle in enumerate(self.Particles):
             particle.update()
@@ -165,14 +176,14 @@ class App:
         pyxel.cls(0)
         pyxel.text(WINDOW_W/2-5, 10, "SHOOT", pyxel.frame_count//5 % 3 + 7)
         pyxel.text(5, 10, "HP:{}".format(self.enemy.hp), 7)
-        pyxel.blt(61, 66, 0, 0, 0, 38, 16)
 
         if not self.player.alive:
             pyxel.text(WINDOW_W/2-20, 100, "GAME OVER", pyxel.frame_count//5 % 3 + 2)
+            pyxel.text(WINDOW_W/2-40, 110, "PRESS ""R"" TO RESTART ", pyxel.frame_count//5 % 3 + 2)
         else:
-            self.player.selfDraw(11)
+            self.player.selfDraw(11, img=1)
         
-        self.enemy.selfDraw(14)
+        self.enemy.selfDraw(14, img=0)
 
         for i, bullet in enumerate(self.Bullets):
             bullet.selfDraw(9)
